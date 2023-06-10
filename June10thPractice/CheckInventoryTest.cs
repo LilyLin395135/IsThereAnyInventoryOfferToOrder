@@ -31,9 +31,10 @@ namespace IsThereAnyInventoryOfferToOrder
             orderProcessor.ProcessOrder(order);
 
             order.Status.Should().Be(OrderStatus.Deny);
-            fakeLog.Received().Information("Order is denied");
+            fakeLog.Received(1).Information("Order is denied");
+            fakeLog.Received(1).Information(Arg.Is<string>(s => s.Contains("denied")));//這裡的意思代表只要有包含"denied"
             //沒有回傳東西、沒有狀態改變的就用NSubstitue Recived (和另一個Return都用在假物件身上)
-            //Received()與Received(1)相等
+            //Received()與Received(1)相等，數字代表有打出去的次數
 
         }
 
@@ -47,8 +48,10 @@ namespace IsThereAnyInventoryOfferToOrder
             public void ToGetProcessed()
             {
                 var fakeinventory = Substitute.For<Inventory>();
+                var fakeLog = Substitute.For<ILog>();
+
                 fakeinventory.CheckInventory(Arg.Any<OrderItems>()).Returns(true);
-                var orderProcessor = new OrderProcessor(fakeinventory, null);//放"空的"→直接放null
+                var orderProcessor = new OrderProcessor(fakeinventory, fakeLog);//放"空的"→直接放null
 
                 var order = new Order();
                 order.OrderNo = "1";
@@ -60,7 +63,9 @@ namespace IsThereAnyInventoryOfferToOrder
                 orderProcessor.ProcessOrder(order);
 
                 order.Status.Should().Be(OrderStatus.Processed);
-
+                fakeLog.Received(0).Information(Arg.Any<string>());//任何字串內容都接收0 //Arg意思為"參數"，因為這個()括號內就是要放參數，型別是字串
+                //如果我括號內寫""→就算我Mutation把if拿掉，這裡一定空的""是因為我這裡非Deny就不會傳log出來
+                //如果我括號內寫"Order is denied"→就代表針對這串字，Mutation的結果也是我希望的，但如果前面的Message了，就要回頭來改這裡的字串了，所以不如用任何字串內容Arg.Any<string>()
             }
         }
 

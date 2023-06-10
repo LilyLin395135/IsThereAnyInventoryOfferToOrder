@@ -40,10 +40,10 @@ namespace ClassLibrary1
 
             order.Status = result.Any(a => a == false) ? OrderStatus.Deny : OrderStatus.Processed;
 
-            if(order.Status == OrderStatus.Deny)
-            {
+            //if(order.Status == OrderStatus.Deny)
+            //{
                 _log.Information("Order is denied");
-            }
+            //}
         }
 
 
