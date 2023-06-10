@@ -14,17 +14,15 @@ namespace IsThereAnyInventoryOfferToOrder
         [TestMethod]
         public void ToGetDeny()
         {
-            var fakeinventory = Substitute.For<Inventory>();
-            //1.代表指定空的OrderItems就會回傳false↓
-            //fakeinventory.CheckInventory(new OrderItems()).Returns(false);
-            //2.代表指定Name是"Product 1"的回傳false。//o => o.Name == "Product 1"【o代表前面的OrderItems】
-            //fakeinventory.CheckInventory(Arg.Is<OrderItems>(o => o.Name == "Product 1")).Returns(false);
+            var fakeinventory = Substitute.For<Inventory>();//這裡不是用介面是因為本來的Production code就不是用介面
+            var fakeLog = Substitute.For<ILog>();//用介面就不用用實體，因為介面彈性比較大
+
             fakeinventory.CheckInventory(Arg.Any<OrderItems>()).Returns(false);
-            var orderProcessor = new OrderProcessor(fakeinventory);
+            var orderProcessor = new OrderProcessor(fakeinventory,fakeLog);
+            //跑錯要我放log，因此我們在上面先建立假的log，這裡使用
 
             var order = new Order();
             order.OrderNo="1";
-            //Item要做假資料
             order.Items = new System.Collections.Generic.List<OrderItems>
             {
                 new OrderItems { Id = 1, Name = "Product 1", Quantity = 2 }
@@ -47,7 +45,7 @@ namespace IsThereAnyInventoryOfferToOrder
             {
                 var fakeinventory = Substitute.For<Inventory>();
                 fakeinventory.CheckInventory(Arg.Any<OrderItems>()).Returns(true);
-                var orderProcessor = new OrderProcessor(fakeinventory);
+                var orderProcessor = new OrderProcessor(fakeinventory, null);//放"空的"→直接放null
 
                 var order = new Order();
                 order.OrderNo = "1";

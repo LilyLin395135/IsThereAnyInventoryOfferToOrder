@@ -7,17 +7,20 @@ namespace ClassLibrary1
     public class OrderProcessor
     {
         private readonly Inventory _inventory;
+        private readonly ILog _log;
         
         //無參數建構式
         public OrderProcessor()
         {
              _inventory = new Inventory();
+            _log = new Log();
         }
 
         //有參數建構式，為了做依賴注入，放假的庫存資料
-        public OrderProcessor(Inventory anyInventory)
+        public OrderProcessor(Inventory anyInventory, ILog log)
         {
             _inventory = anyInventory;
+            _log = log;
         }
 
         
@@ -36,9 +39,27 @@ namespace ClassLibrary1
                 .Select(item => _inventory.CheckInventory(item)).ToList();
 
             order.Status = result.Any(a => a == false) ? OrderStatus.Deny : OrderStatus.Processed;
+
+            if(order.Status == OrderStatus.Deny)
+            {
+                _log.Information("Order is denied");
+            }
         }
 
 
+    }
+
+    internal class Log : ILog
+    {
+        public void Information(string message)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public interface ILog
+    {
+        void Information(string message);
     }
 
     public class Inventory
