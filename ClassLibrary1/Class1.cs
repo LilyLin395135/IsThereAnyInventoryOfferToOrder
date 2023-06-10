@@ -8,18 +8,29 @@ namespace ClassLibrary1
     {
         public void ProcessOrder(Order order)
         {
+            //這裡要讓IsValid()通過，就要有OrderNo傳入、Items.Any()有東西
             if (!order.IsValid())
             {
                 throw new Exception("Invalid order.");
             }
 
-            var inventory = new Inventory();
+            //這裡要讓原本的inventory.CheckInventory(item)等於false，就把整個提取出來可以覆寫
+            //首先因為這裡只有使用一次inventory，所以可以把它寫成一句new Inventory().CheckInventory(item)，一起提取
+            //就不會影響原本的，外面也可以直接return false
+            //var inventory = new Inventory();
             var result = order
                 .Items
-                .Select(item => inventory.CheckInventory(item)).ToList();
+                .Select(item => InventoryCheck(item)).ToList();
 
             order.Status = result.Any(a => a == false) ? OrderStatus.Deny : OrderStatus.Processed;
         }
+
+        protected virtual bool InventoryCheck(OrderItems item)
+        {
+            return new Inventory().CheckInventory(item);
+        }
+
+
     }
 
     public class Inventory
@@ -44,7 +55,7 @@ namespace ClassLibrary1
 
         // ... other properties
 
-        public bool IsValid()//判斷有沒有東西
+        public bool IsValid()//判斷有沒有東西，通過就要有OrderNo傳入、Items.Any()有東西
         {
             return string.IsNullOrEmpty(OrderNo) == false && Items.Any();
         }
@@ -61,5 +72,8 @@ namespace ClassLibrary1
     public class OrderItems
     {
         // ... properties
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Quantity { get; set; }
     }
 }
