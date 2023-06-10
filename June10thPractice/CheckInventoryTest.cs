@@ -31,6 +31,9 @@ namespace IsThereAnyInventoryOfferToOrder
             orderProcessor.ProcessOrder(order);
 
             order.Status.Should().Be(OrderStatus.Deny);
+            fakeLog.Received().Information("Order is denied");
+            //沒有回傳東西、沒有狀態改變的就用NSubstitue Recived (和另一個Return都用在假物件身上)
+            //Received()與Received(1)相等
 
         }
 
