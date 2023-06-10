@@ -6,6 +6,21 @@ namespace ClassLibrary1
 {
     public class OrderProcessor
     {
+        private readonly Inventory _inventory;
+        
+        //無參數建構式
+        public OrderProcessor()
+        {
+             _inventory = new Inventory();
+        }
+
+        //有參數建構式，為了做依賴注入，放假的庫存資料
+        public OrderProcessor(Inventory anyInventory)
+        {
+            _inventory = anyInventory;
+        }
+
+        
         public void ProcessOrder(Order order)
         {
             //這裡要讓IsValid()通過，就要有OrderNo傳入、Items.Any()有東西
@@ -14,20 +29,13 @@ namespace ClassLibrary1
                 throw new Exception("Invalid order.");
             }
 
-            //這裡要讓原本的inventory.CheckInventory(item)等於false，就把整個提取出來可以覆寫
-            //首先因為這裡只有使用一次inventory，所以可以把它寫成一句new Inventory().CheckInventory(item)，一起提取
-            //就不會影響原本的，外面也可以直接return false
+            //這裡要記得把inventory改成_unventory
             //var inventory = new Inventory();
             var result = order
                 .Items
-                .Select(item => InventoryCheck(item)).ToList();
+                .Select(item => _inventory.CheckInventory(item)).ToList();
 
             order.Status = result.Any(a => a == false) ? OrderStatus.Deny : OrderStatus.Processed;
-        }
-
-        protected virtual bool InventoryCheck(OrderItems item)
-        {
-            return new Inventory().CheckInventory(item);
         }
 
 
@@ -41,7 +49,7 @@ namespace ClassLibrary1
         /// <param name="item"></param>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public bool CheckInventory(OrderItems item)
+        public virtual bool CheckInventory(OrderItems item)
         {
             throw new NotImplementedException();
         }
